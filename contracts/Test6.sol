@@ -36,14 +36,17 @@ contract Contract is
     mapping(address => uint256) public whitelist;
     mapping(address => uint256) public tokensMinted;
 
-    uint256[maxSupply] internal availableIds;
+    uint256[] private availableIds;
 
-    constructor(
-        address initialOwner
-    ) ERC721("Contract Name", "Contract") Ownable(initialOwner) {
+    constructor(address initialOwner) ERC721("Contract Name", "Contract") Ownable(initialOwner) {
         royaltyAddress = msg.sender;
         royaltyPercentage = 250;
         _setDefaultRoyalty(royaltyAddress, royaltyPercentage);
+
+        // Populate the availableIds array with token IDs from 1 to 700 (public minting only)
+        for (uint256 i = 1; i <= 700; i++) {
+            availableIds.push(i);
+        }
     }
 
     function updateRoyaltyAddress(address _royaltyAddress) external onlyOwner {
@@ -86,7 +89,7 @@ contract Contract is
     function mint(uint256 numTokens) public payable nonReentrant {
         require(!paused, "Minting is paused");
         require(
-            totalSupply() + numTokens <= maxSupply,
+            totalSupply() + numTokens <= maxSupply - 49, // Ensures marketing tokens are reserved
             "Total supply exceeded"
         );
         require(
@@ -104,10 +107,21 @@ contract Contract is
             : publicCost;
         require(msg.value >= mintPrice * numTokens, "Invalid amount sent");
 
-        uint256 tokenId = totalSupply() - 49;
         for (uint256 i = 0; i < numTokens; i++) {
-            _safeMint(msg.sender, tokenId + i);
+            require(availableIds.length > 0, "No more available tokens");
+
+            uint256 randomIndex = uint256(
+                keccak256(abi.encodePacked(block.timestamp, msg.sender, availableIds.length))
+            ) % availableIds.length;
+
+            uint256 tokenId = availableIds[randomIndex];
+
+            _safeMint(msg.sender, tokenId);
             tokensMinted[msg.sender]++;
+
+            // Remove the minted token from availableIds
+            availableIds[randomIndex] = availableIds[availableIds.length - 1];
+            availableIds.pop();
         }
     }
 
@@ -229,16 +243,27 @@ contract Contract is
 
     function devMint(address recipient, uint256 numTokens) external onlyOwner {
         require(
-            totalSupply() + numTokens <= maxSupply,
+            totalSupply() + numTokens <= maxSupply - 50, // Ensure last 50 are reserved for marketing
             "Total supply exceeded"
         );
-        require(totalSupply() > 121, "Finish marketing minting first");
+        require(totalSupply() > 49, "Finish marketing minting first");
         require(recipient != address(0), "Invalid recipient address");
 
-        uint256 tokenId = totalSupply() + 1; // Ensure minting starts at the correct ID
-
         for (uint256 i = 0; i < numTokens; i++) {
-            _safeMint(recipient, tokenId + i);
+            require(availableIds.length > 0, "No more available tokens");
+
+            // Generate a pseudo-random index from the available pool
+            uint256 randomIndex = uint256(
+                keccak256(abi.encodePacked(block.timestamp, msg.sender, availableIds.length))
+            ) % availableIds.length;
+
+            uint256 tokenId = availableIds[randomIndex];
+
+            _safeMint(recipient, tokenId);
+
+            // Remove the minted token from availableIds to avoid duplicates
+            availableIds[randomIndex] = availableIds[availableIds.length - 1];
+            availableIds.pop();
         }
     }
 
