@@ -233,7 +233,7 @@ contract Contract is ERC721Enumerable, ERC721URIStorage, Ownable, ReentrancyGuar
         }
     }
 
-    uint256 public mintingCounter = 1;
+    uint256 public mintingCounter = 0;
     uint256 public lastMintedTokenId;
 
     function marketingMint() external onlyOwner {
@@ -254,7 +254,7 @@ contract Contract is ERC721Enumerable, ERC721URIStorage, Ownable, ReentrancyGuar
                 : lastMintedTokenId + 1;
             end = start + numToMint;
         } else {
-            revert("Marketing minting limit reached");
+            revert("Marketing mint limit reached");
         }
 
         for (uint256 i = start; i < end; i++) {
