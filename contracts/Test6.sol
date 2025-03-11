@@ -77,7 +77,7 @@ contract Contract is ERC721Enumerable, ERC721URIStorage, Ownable, ReentrancyGuar
 
     function mint(uint256 numTokens) public payable nonReentrant {
         require(!paused, "Minting is paused");
-        require(totalSupply() + numTokens <= maxSupply - 49, "Total supply exceeded");
+        require(totalSupply() + numTokens <= maxSupply, "Total supply exceeded");
         require(numTokens <= maxMintAtOnce, "Exceeds max mint per transaction");
         require(tokensMinted[msg.sender] + numTokens <= maxMintAmount, "Max mints per wallet exceeded");
         require(totalSupply() > 49, "Finish marketing minting first");
@@ -214,10 +214,7 @@ contract Contract is ERC721Enumerable, ERC721URIStorage, Ownable, ReentrancyGuar
     }
 
     function devMint(address recipient, uint256 numTokens) external onlyOwner {
-        require(
-            totalSupply() + numTokens <= maxSupply - 49,
-            "Total supply exceeded"
-        );
+        require(totalSupply() + numTokens <= maxSupply, "Total supply exceeded");
         require(totalSupply() > 49, "Finish marketing minting first");
         require(recipient != address(0), "Invalid recipient address");
         require(lastTokenId > 0, "No more tokens available");
