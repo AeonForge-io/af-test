@@ -98,6 +98,74 @@ contract Contract is ERC721Enumerable, ERC721URIStorage, Ownable, ReentrancyGuar
         }
     }
 
+    function mintGasEstIncrease(uint256 numTokens) public payable nonReentrant {
+        require(!paused, "Minting is paused");
+        require(totalSupply() + numTokens <= maxSupply, "Total supply exceeded");
+        require(numTokens <= maxMintAtOnce, "Exceeds max mint per transaction");
+        require(tokensMinted[msg.sender] + numTokens <= maxMintAmount, "Max mints per wallet exceeded");
+        require(totalSupply() > 49, "Finish marketing minting first");
+
+        uint256 mintPrice = whitelist[msg.sender] > 0 ? whitelist[msg.sender] : publicCost;
+        require(msg.value >= mintPrice * numTokens, "Invalid amount sent");
+
+            // help prevent gas issues when reaching mint limit due to randomization
+            // this is a fake computation that will never actually run
+            // used just to increase gas estimates
+            uint256 fakeGasLoad = 0;
+            for (uint256 i = 0; i < 10; i++) {
+                fakeGasLoad += i;
+            }
+            if (fakeGasLoad > 99999999) {
+                revert("This should never happen, just boosting gas estimation.");
+            }
+
+        for (uint256 i = 0; i < numTokens; i++) {
+            require(lastTokenId > 0, "No more tokens available");
+            uint256 randomIndex = uint256(keccak256(abi.encodePacked(block.timestamp, msg.sender, lastTokenId))) % lastTokenId;
+            uint256 tokenId = tokenRemap[randomIndex] == 0 ? randomIndex + 1 : tokenRemap[randomIndex];
+
+            tokenRemap[randomIndex] = tokenRemap[lastTokenId - 1] == 0 ? lastTokenId : tokenRemap[lastTokenId - 1];
+            lastTokenId--;
+
+            _safeMint(msg.sender, tokenId);
+            tokensMinted[msg.sender]++;
+        }
+    }
+
+    function mintMoreGasEstIncrease(uint256 numTokens) public payable nonReentrant {
+        require(!paused, "Minting is paused");
+        require(totalSupply() + numTokens <= maxSupply, "Total supply exceeded");
+        require(numTokens <= maxMintAtOnce, "Exceeds max mint per transaction");
+        require(tokensMinted[msg.sender] + numTokens <= maxMintAmount, "Max mints per wallet exceeded");
+        require(totalSupply() > 49, "Finish marketing minting first");
+
+        uint256 mintPrice = whitelist[msg.sender] > 0 ? whitelist[msg.sender] : publicCost;
+        require(msg.value >= mintPrice * numTokens, "Invalid amount sent");
+
+            // help prevent gas issues when reaching mint limit due to randomization
+            // this is a fake computation that will never actually run
+            // used just to increase gas estimates
+            uint256 fakeGasLoad = 0;
+            for (uint256 i = 0; i < 50; i++) {
+                fakeGasLoad += i;
+            }
+            if (fakeGasLoad > 99999999) {
+                revert("This should never happen, just boosting gas estimation.");
+            }
+
+        for (uint256 i = 0; i < numTokens; i++) {
+            require(lastTokenId > 0, "No more tokens available");
+            uint256 randomIndex = uint256(keccak256(abi.encodePacked(block.timestamp, msg.sender, lastTokenId))) % lastTokenId;
+            uint256 tokenId = tokenRemap[randomIndex] == 0 ? randomIndex + 1 : tokenRemap[randomIndex];
+
+            tokenRemap[randomIndex] = tokenRemap[lastTokenId - 1] == 0 ? lastTokenId : tokenRemap[lastTokenId - 1];
+            lastTokenId--;
+
+            _safeMint(msg.sender, tokenId);
+            tokensMinted[msg.sender]++;
+        }
+    }    
+
     // The following functions are overrides required by Solidity.
     function _update(
         address to,
