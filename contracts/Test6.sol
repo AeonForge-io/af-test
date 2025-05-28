@@ -8,6 +8,7 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Royalty.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract Contract is
     ERC721Enumerable,
@@ -332,5 +333,44 @@ contract Contract is
         payable(devAddress).transfer(devWithdraw);
         payable(marketingAddress).transfer(marketingWithdraw);
         payable(retAddress).transfer(retWithdraw);
+    }
+
+    /**
+     * @dev Allows the owner to rescue ERC20 tokens sent to this contract by mistake
+     * @param tokenAddress The address of the ERC20 token contract
+     * @param to The address to send the rescued tokens to
+     * @param amount The amount of tokens to rescue
+     */
+    function rescueERC20(address tokenAddress, address to, uint256 amount) external onlyOwner {
+        require(to != address(0), "Cannot send to zero address");
+        
+        // Create an interface to the ERC20 contract
+        IERC20 token = IERC20(tokenAddress);
+        
+        // Transfer the tokens to the specified address
+        token.transfer(to, amount);
+    }
+
+    /**
+     * @dev Allows the owner to rescue ERC721 tokens sent to this contract by mistake
+     * @param tokenAddress The address of the ERC721 token contract
+     * @param tokenId The ID of the token to rescue
+     * @param to The address to send the rescued token to
+     */
+    function rescueERC721(address tokenAddress, uint256 tokenId, address to) external onlyOwner {
+        require(to != address(0), "Cannot send to zero address");
+        
+        // Create an interface to the ERC721 contract
+        IERC721 token = IERC721(tokenAddress);
+        
+        // If rescuing tokens from this contract, use the internal transfer function
+        if (tokenAddress == address(this)) {
+            // Ensure the contract owns the token
+            require(_ownerOf(tokenId) == address(this), "Contract does not own this token");
+            _update(to, tokenId, address(this));
+        } else {
+            // For external contracts, use safeTransferFrom
+            token.safeTransferFrom(address(this), to, tokenId);
+        }
     }
 }
