@@ -9,7 +9,13 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
-contract Contract is ERC721Enumerable, ERC721URIStorage, Ownable, ReentrancyGuard, ERC721Royalty {
+contract Contract is
+    ERC721Enumerable,
+    ERC721URIStorage,
+    Ownable,
+    ReentrancyGuard,
+    ERC721Royalty
+{
     using Strings for uint256;
     uint256 public constant maxSupply = 750;
     uint256 public maxMintAmount = 5;
@@ -17,7 +23,8 @@ contract Contract is ERC721Enumerable, ERC721URIStorage, Ownable, ReentrancyGuar
     uint256 public publicCost = .001 ether;
     uint256 public whitelistCost = .0008 ether;
     bool public paused = true;
-    string public baseURI = "ipfs://bafybeichsdjif7t6tf2qitxavlzwzozqz5disdxhdp65trmbonkoxhpk4m/";
+    string public baseURI =
+        "ipfs://bafybeichsdjif7t6tf2qitxavlzwzozqz5disdxhdp65trmbonkoxhpk4m/";
     address public charityAddress;
     address public teamAddress;
     address public devAddress;
@@ -32,7 +39,9 @@ contract Contract is ERC721Enumerable, ERC721URIStorage, Ownable, ReentrancyGuar
     mapping(uint256 => uint256) private tokenRemap;
     uint256 private lastTokenId = 700;
 
-    constructor(address initialOwner) ERC721("Contract Name", "Contract") Ownable(initialOwner) {
+    constructor(
+        address initialOwner
+    ) ERC721("Contract Name", "Contract") Ownable(initialOwner) {
         royaltyAddress = msg.sender;
         royaltyPercentage = 250;
         _setDefaultRoyalty(royaltyAddress, royaltyPercentage);
@@ -69,7 +78,9 @@ contract Contract is ERC721Enumerable, ERC721URIStorage, Ownable, ReentrancyGuar
         }
     }
 
-    function removeFromWhitelist(address[] memory _addresses) external onlyOwner {
+    function removeFromWhitelist(
+        address[] memory _addresses
+    ) external onlyOwner {
         for (uint256 i = 0; i < _addresses.length; i++) {
             delete whitelist[_addresses[i]];
         }
@@ -77,26 +88,42 @@ contract Contract is ERC721Enumerable, ERC721URIStorage, Ownable, ReentrancyGuar
 
     function mint(uint256 numTokens) public payable nonReentrant {
         require(!paused, "Minting is paused");
-        require(totalSupply() + numTokens <= maxSupply, "Total supply exceeded");
+        require(
+            totalSupply() + numTokens <= maxSupply,
+            "Total supply exceeded"
+        );
         require(numTokens <= maxMintAtOnce, "Exceeds max mint per transaction");
-        require(tokensMinted[msg.sender] + numTokens <= maxMintAmount, "Max mints per wallet exceeded");
+        require(
+            tokensMinted[msg.sender] + numTokens <= maxMintAmount,
+            "Max mints per wallet exceeded"
+        );
         require(totalSupply() > 49, "Finish marketing minting first");
 
-        uint256 mintPrice = whitelist[msg.sender] > 0 ? whitelist[msg.sender] : publicCost;
+        uint256 mintPrice = whitelist[msg.sender] > 0
+            ? whitelist[msg.sender]
+            : publicCost;
         require(msg.value >= mintPrice * numTokens, "Invalid amount sent");
 
         for (uint256 i = 0; i < numTokens; i++) {
             require(lastTokenId > 0, "No more tokens available");
-            uint256 randomIndex = uint256(keccak256(abi.encodePacked(block.timestamp, msg.sender, lastTokenId))) % lastTokenId;
-            uint256 tokenId = tokenRemap[randomIndex] == 0 ? randomIndex + 1 : tokenRemap[randomIndex];
+            uint256 randomIndex = uint256(
+                keccak256(
+                    abi.encodePacked(block.timestamp, msg.sender, lastTokenId)
+                )
+            ) % lastTokenId;
+            uint256 tokenId = tokenRemap[randomIndex] == 0
+                ? randomIndex + 1
+                : tokenRemap[randomIndex];
 
-            tokenRemap[randomIndex] = tokenRemap[lastTokenId - 1] == 0 ? lastTokenId : tokenRemap[lastTokenId - 1];
+            tokenRemap[randomIndex] = tokenRemap[lastTokenId - 1] == 0
+                ? lastTokenId
+                : tokenRemap[lastTokenId - 1];
             lastTokenId--;
 
             _safeMint(msg.sender, tokenId);
             tokensMinted[msg.sender]++;
         }
-    } 
+    }
 
     // The following functions are overrides required by Solidity.
     function _update(
@@ -214,16 +241,27 @@ contract Contract is ERC721Enumerable, ERC721URIStorage, Ownable, ReentrancyGuar
     }
 
     function devMint(address recipient, uint256 numTokens) external onlyOwner {
-        require(totalSupply() + numTokens <= maxSupply, "Total supply exceeded");
+        require(
+            totalSupply() + numTokens <= maxSupply,
+            "Total supply exceeded"
+        );
         require(totalSupply() > 49, "Finish marketing minting first");
         require(recipient != address(0), "Invalid recipient address");
         require(lastTokenId > 0, "No more tokens available");
 
         for (uint256 i = 0; i < numTokens; i++) {
-            uint256 randomIndex = uint256(keccak256(abi.encodePacked(block.timestamp, msg.sender, lastTokenId))) % lastTokenId;
-            uint256 tokenId = tokenRemap[randomIndex] == 0 ? randomIndex + 1 : tokenRemap[randomIndex];
+            uint256 randomIndex = uint256(
+                keccak256(
+                    abi.encodePacked(block.timestamp, msg.sender, lastTokenId)
+                )
+            ) % lastTokenId;
+            uint256 tokenId = tokenRemap[randomIndex] == 0
+                ? randomIndex + 1
+                : tokenRemap[randomIndex];
 
-            tokenRemap[randomIndex] = tokenRemap[lastTokenId - 1] == 0 ? lastTokenId : tokenRemap[lastTokenId - 1];
+            tokenRemap[randomIndex] = tokenRemap[lastTokenId - 1] == 0
+                ? lastTokenId
+                : tokenRemap[lastTokenId - 1];
             lastTokenId--;
 
             _safeMint(recipient, tokenId);
@@ -240,19 +278,14 @@ contract Contract is ERC721Enumerable, ERC721URIStorage, Ownable, ReentrancyGuar
             "Contract has reached maximum supply"
         );
 
-        uint256 numToMint;
+        uint256 numToMint = 25;
         uint256 start;
         uint256 end;
 
-        if (mintingCounter < 2) {
-            numToMint = 25;
-            start = lastMintedTokenId == 0
-                ? maxSupply - 49
-                : lastMintedTokenId + 1;
-            end = start + numToMint;
-        } else {
-            revert("Marketing mint limit reached");
-        }
+        require(mintingCounter < 2, "Marketing mint limit reached");
+
+        start = lastMintedTokenId == 0 ? maxSupply - 49 : lastMintedTokenId + 1;
+        end = start + numToMint;
 
         for (uint256 i = start; i < end; i++) {
             _safeMint(marketingAddress, i);
