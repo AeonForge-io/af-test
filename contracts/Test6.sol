@@ -86,6 +86,22 @@ contract Contract is
         }
     }
 
+    /**
+     * @dev Updates the whitelist cost for specific addresses
+     * @param _addresses Array of addresses to update
+     * @param _cost The cost to set (if 0, uses the current whitelistCost)
+     */
+    function updateWhitelistCost(address[] memory _addresses, uint256 _cost) external onlyOwner {
+        uint256 costToUse = _cost > 0 ? _cost : whitelistCost;
+        
+        for (uint256 i = 0; i < _addresses.length; i++) {
+            // Only update if address is already whitelisted
+            if (whitelist[_addresses[i]] > 0) {
+                whitelist[_addresses[i]] = costToUse;
+            }
+        }
+    }
+
     function mint(uint256 numTokens) public payable nonReentrant {
         require(!paused, "Minting is paused");
         require(
