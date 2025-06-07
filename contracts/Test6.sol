@@ -19,8 +19,8 @@ contract Contract is
 {
     using Strings for uint256;
     uint256 public constant maxSupply = 750;
-    uint256 public maxMintAmount = 5;
-    uint256 public maxMintAtOnce = 5;
+    uint256 public maxMintAmount = 20;
+    uint256 public maxMintAtOnce = 20;
     uint256 public publicCost = .001 ether;
     uint256 public whitelistCost = .0008 ether;
     bool public paused = true;
