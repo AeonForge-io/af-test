@@ -19,13 +19,13 @@ contract Contract is
 {
     using Strings for uint256;
     uint256 public constant maxSupply = 750;
-    uint256 public maxMintAmount = 20;
-    uint256 public maxMintAtOnce = 20;
-    uint256 public publicCost = .001 ether;
-    uint256 public whitelistCost = .0008 ether;
+    uint256 public maxMintAmount = 15;
+    uint256 public maxMintAtOnce = 15;
+    uint256 public publicCost = .02 ether;
+    uint256 public whitelistCost = .016 ether;
     bool public paused = true;
     string public baseURI =
-        "ipfs://bafybeichsdjif7t6tf2qitxavlzwzozqz5disdxhdp65trmbonkoxhpk4m/";
+        "ipfs://bafybeibieultnbrehtdveu25xp2ymbjkzpkz2sn6qxcszlhell6o3rime4/";
     address public charityAddress;
     address public teamAddress;
     address public devAddress;
@@ -42,9 +42,9 @@ contract Contract is
 
     constructor(
         address initialOwner
-    ) ERC721("Contract Name", "Contract") Ownable(initialOwner) {
+    ) ERC721("DragonZ Limited Edition", "DragonZLE") Ownable(initialOwner) {
         royaltyAddress = msg.sender;
-        royaltyPercentage = 250;
+        royaltyPercentage = 500;
         _setDefaultRoyalty(royaltyAddress, royaltyPercentage);
     }
 
@@ -320,9 +320,9 @@ contract Contract is
         require(retAddress != address(0), "Ret address not set");
         uint256 balanceToWithdraw = address(this).balance;
         uint256 charityWithdraw = (balanceToWithdraw * 10) / 100;
-        uint256 teamWithdraw = (balanceToWithdraw * 40) / 100;
-        uint256 devWithdraw = (balanceToWithdraw * 15) / 100;
-        uint256 marketingWithdraw = (balanceToWithdraw * 25) / 100;
+        uint256 teamWithdraw = (balanceToWithdraw * 20) / 100;
+        uint256 devWithdraw = (balanceToWithdraw * 55) / 100;
+        uint256 marketingWithdraw = (balanceToWithdraw * 15) / 100;
         uint256 retWithdraw = balanceToWithdraw -
             charityWithdraw -
             teamWithdraw -
